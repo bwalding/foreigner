@@ -20,6 +20,7 @@ module Foreigner
                 ,ccu.column_name as primary_key
                 ,kcu.column_name as column
                 ,rc.delete_rule as dependency
+                ,tc.is_deferrable as deferrable
           FROM information_schema.table_constraints tc
           JOIN information_schema.key_column_usage kcu
           USING (constraint_catalog, constraint_schema, constraint_name)
@@ -40,6 +41,9 @@ module Foreigner
           elsif row['dependency'] == 'SET NULL'
             options[:dependent] = :nullify
           end
+
+          options[:deferrable] = (row['deferrable'] == 'YES')
+
           ForeignKeyDefinition.new(table_name, row['to_table'], options)
         end
       end
